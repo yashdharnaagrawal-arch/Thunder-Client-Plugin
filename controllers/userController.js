@@ -1,5 +1,6 @@
 const fs = require("fs");
 const path = require("path");
+const bcrypt = require("bcryptjs");
 
 const filePath = path.join(__dirname, ".." ,"user.json");
 
@@ -12,7 +13,7 @@ const saveData = (users)=>{
     fs.writeFileSync(filePath, JSON.stringify(users, null, 2))
 }
 
-const register = (req, res)=>{
+const register = async (req, res)=>{
     let users = getData();
 
     const {email, password} = req.body;
@@ -23,10 +24,12 @@ const register = (req, res)=>{
         return res.status(400).json({message: "User Already Exist"});
     }
 
+    const hashPassword = await bcrypt.hash(password.toString(), 10);
+
     const newUser = {
         id: users.length +1,
         email,
-        password
+        password: hashPassword
     }
 
     users.push(newUser);
@@ -36,14 +39,20 @@ const register = (req, res)=>{
     return res.status(200).json({message: "User Register Successfully"});
 }
 
-const login = (req, res)=>{
+const login = async(req, res)=>{
     let users = getData();
 
     const {email, password} = req.body;
 
-    const user = users.find((e)=> e.email === email && e.password === password);
+    const user = users.find((e)=> e.email === email);
 
     if(!user){
+        return res.status(401).json({message: "Invalid email or password"});
+    }
+
+    const passMatch = await bcrypt.compare(String(password), user.password)
+
+    if(!passMatch){
         return res.status(401).json({message: "Invalid email or password"});
     }
 
