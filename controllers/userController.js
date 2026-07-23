@@ -56,4 +56,54 @@ const getUser = (req, res)=>{
     res.json(users);
 }
 
-module.exports= {register, login, getUser}
+const updateUser = (req, res) => {
+  let users = getData();
+
+  const id = Number(req.params.id);
+  const { email, password } = req.body;
+
+  const userIndex = users.findIndex((user) => user.id === id);
+
+  if (userIndex === -1) {
+    return res.status(404).json({
+      message: "User not found",
+    });
+  }
+
+  users[userIndex] = {
+    ...users[userIndex],
+    email,
+    password,
+  };
+
+  saveData(users);
+
+  res.status(200).json({
+    message: "User updated successfully",
+    user: users[userIndex],
+  });
+};
+
+const deleteUser = (req, res) => {
+  let users = getData();
+
+  const id = Number(req.params.id);
+
+  const user = users.find((user) => user.id === id);
+
+  if (!user) {
+    return res.status(404).json({
+      message: "User not found",
+    });
+  }
+
+  users = users.filter((user) => user.id !== id);
+
+  saveData(users);
+
+  res.status(200).json({
+    message: "User deleted successfully",
+  });
+};
+
+module.exports= {register, login, getUser, updateUser, deleteUser}
