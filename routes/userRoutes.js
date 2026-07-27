@@ -2,7 +2,9 @@ const express = require("express");
 const router = express.Router();
 const {register, login, getUser, updateUser, deleteUser} = require("../controllers/userController")
 
-router.get("/", getUser)
+const verifyToken = require("../middleware/authMiddleware")
+
+router.get("/", verifyToken, getUser)
 router.post("/register", register);
 router.post("/login", login);
 

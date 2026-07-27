@@ -1,8 +1,13 @@
+const jwt = require("jsonwebtoken");
+
 const fs = require("fs");
 const path = require("path");
 const bcrypt = require("bcryptjs");
+require("dotenv").config()
 
 const filePath = path.join(__dirname, ".." ,"user.json");
+
+const secret = process.env.JWT_TOKEN ;
 
 const getData = () =>{
     const data = fs.readFileSync(filePath, "utf-8")
@@ -56,7 +61,23 @@ const login = async(req, res)=>{
         return res.status(401).json({message: "Invalid email or password"});
     }
 
-    return res.status(200).json({message: "User Login Successfully"});
+    const token = jwt.sign(
+        {
+            id: user.id,
+            email: user.email
+        },
+        secret,
+        {
+            expiresIn: "10m"
+        }
+    )
+
+    return res.status(200).json(
+        {
+            message: "User Login Successfully",
+            token
+        }
+    );
 }
 
 const getUser = (req, res)=>{
